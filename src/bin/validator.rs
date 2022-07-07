@@ -79,7 +79,7 @@ fn merge_configs(config: CliOpts, bundler_config: BundlerConfig) -> CliOpts {
         Some(u) => Some(u),
         None => {
             let url_string = format!("https://{}", bundler_config.gateway);
-            let url = url::Url::from_str(&url_string).unwrap();
+            let url = url::Url::from_str(&url_string).expect("Invalid Arweave gateway URL");
             Some(url)
         }
     };
@@ -115,17 +115,27 @@ impl InMemoryKeyManagerConfig for Keys {
 // TODO: This does not belong here, create a new time for AppContextConfig and move to context module
 impl From<&CliOpts> for AppContext {
     fn from(config: &CliOpts) -> Self {
-        let bundler_jwk = if let Some(key_file_path) = &config.bundler_key {
-            let file = fs::read_to_string(key_file_path).unwrap();
-            file.parse().unwrap()
-        } else {
-            let n = config.bundler_public.as_ref().unwrap();
-            public_only_jwk_from_rsa_n(n).expect("Failed to decode bundler key")
+        let bundler_jwk = match (&config.bundler_key, config.bundler_public.as_ref()) {
+            (Some(key_file_path), None) => {
+                let file = fs::read_to_string(key_file_path)
+                    .expect("Failed to read bundler public key file");
+                file.parse()
+                    .expect("Failed to parse bundler public key file")
+            }
+            (None, Some(bundler_public_key)) => public_only_jwk_from_rsa_n(bundler_public_key)
+                .expect("Failed to decode bundler public key"),
+            (Some(_), Some(_)) => {
+                panic!("Both: bundler key and bundler public key file defined, define only one of them.");
+            }
+            (None, None) => {
+                panic!("Neither: bundler key nor bundler public key defined, at least one of them needs to be defined.");
+            }
         };
 
         let validator_jwk: JsonWebKey = {
-            let file = fs::read_to_string(&config.validator_key).unwrap();
-            file.parse().unwrap()
+            let file = fs::read_to_string(&config.validator_key)
+                .expect("Failed to find validator wallet file");
+            file.parse().expect("Failed to parse validator wallet file")
         };
 
         let key_manager = InMemoryKeyManager::new(&Keys(bundler_jwk, validator_jwk));
@@ -134,7 +144,7 @@ impl From<&CliOpts> for AppContext {
         let connection_mgr = ConnectionManager::<PgConnection>::new(&config.database_url);
         let pool = r2d2::Pool::builder()
             .build(connection_mgr)
-            .expect("Failed to create SQLite connection pool.");
+            .expect("Failed to create database connection pool.");
 
         let arweave_url = match &config.arweave_url {
             Some(url) => url,
