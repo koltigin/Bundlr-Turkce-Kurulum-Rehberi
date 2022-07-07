@@ -6,6 +6,7 @@ use diesel::{
 };
 use env_logger::Env;
 use jsonwebkey::{JsonWebKey, Key, PublicExponent, RsaPublic};
+use log::info;
 use std::{fs, net::SocketAddr, str::FromStr};
 use url::Url;
 
@@ -166,12 +167,12 @@ async fn main() -> () {
     let ctx = AppContext::from(&config);
 
     if !config.no_cron {
-        paris::info!("Running with cron");
+        info!("Running with cron");
         tokio::task::spawn_local(run_crons(ctx.clone()));
     };
 
     if !config.no_server {
-        paris::info!("Running with server");
+        info!("Running with server");
         run_server(ctx.clone()).await.unwrap()
     };
 }
