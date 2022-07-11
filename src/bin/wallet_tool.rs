@@ -1,4 +1,4 @@
-use std::fs;
+use std::{fs, io::stdin};
 
 use clap::{Parser, Subcommand};
 use jsonwebkey::{JsonWebKey, Key, PublicExponent, RsaPrivate, RsaPublic};
@@ -12,9 +12,9 @@ enum Command {
     Create,
     /// Show Arweaver address for a wallet
     ShowAddress {
-        /// Path to JWK file containing Arweaver wallet
+        /// Path to JWK file containing Arweaver wallet file
         #[clap(short = 'w', long)]
-        wallet: String,
+        wallet: Option<String>,
     },
 }
 
@@ -51,7 +51,15 @@ fn main() {
         }
         Command::ShowAddress { ref wallet } => {
             let (_, _, address) = {
-                let wallet = fs::read_to_string(wallet).expect("Failed to find wallet file");
+                let wallet = if let Some(wallet) = wallet {
+                    fs::read_to_string(wallet).expect("Failed to find wallet file")
+                } else {
+                    let res = stdin().lines().fold(String::new(), |mut acc, line| {
+                        acc.push_str(&line.expect("Faild to read a line"));
+                        acc
+                    });
+                    res
+                };
                 let jwk: JsonWebKey = wallet.parse().expect("Failed to parse wallet file");
                 key_manager::split_jwk(&jwk)
             };
