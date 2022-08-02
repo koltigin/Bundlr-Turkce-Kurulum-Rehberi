@@ -1,5 +1,5 @@
 # Bundlr Network Türkçe Node Kurulum Rehberi
-
+![image](https://user-images.githubusercontent.com/102043225/182342392-a15ecdb4-3aca-4cd0-bae8-f9ad4239ccb3.png)
 ##  Sistem Gereksinimleri
 * 4vCPU
 * 8GB RAM
