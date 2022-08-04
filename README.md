@@ -95,6 +95,7 @@ source $HOME/.profile
 [Bundlr Faucet](https://bundlr.network/faucet) adresine giderek token alıyoruz.
 
 Aşağıdaki kod ile bakiyemizi sorguluyoruz.
+`CUZDAN_ADRESINIZ` bölümüne cüzdan adresinizi yazınız.
 ```shell
 testnet-cli balance CUZDAN_ADRESINIZ
 ```
@@ -106,6 +107,7 @@ testnet-cli join RkinCLBlY4L5GZFv8gCFcrygTyd5Xm91CzKlR6qxhKA -w ~/validator-rust
 
 
 ## Validator Kaydınızı Kontrol Etme
+`CUZDAN_ADRESINIZ` bölümüne cüzdan adresinizi yazınız.
 ```shell
 npx @bundlr-network/testnet-cli@latest check RkinCLBlY4L5GZFv8gCFcrygTyd5Xm91CzKlR6qxhKA CUZDAN_ADRESINIZ
 ```
